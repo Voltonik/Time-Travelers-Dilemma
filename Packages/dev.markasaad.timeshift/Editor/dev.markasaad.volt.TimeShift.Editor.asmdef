@@ -1,0 +1,16 @@
+{
+    "name": "dev.markasaad.volt.TimeShift.Editor",
+    "rootNamespace": "",
+    "references": [
+        "dev.markasaad.volt.TimeShift"
+    ],
+    "includePlatforms": [ ],
+    "excludePlatforms": [ ],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [ ],
+    "autoReferenced": true,
+    "defineConstraints": [ ],
+    "versionDefines": [ ],
+    "noEngineReferences": false
+}

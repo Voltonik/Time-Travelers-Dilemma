@@ -1,0 +1,15 @@
+{
+  "name": "dev.markasaad.timeshift",
+  "displayName": "Time Shift",
+  "version": "0.1.0",
+  "unity": "2022.3",
+  "description": "Core time manipulation system (rewind, fast-forward, pause) with timeline state capture and event playback for gameplay prototyping and production use.",
+  "author": {
+    "name": "Mark Asaad",
+    "email": "markasaadramzy@gmail.com"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "com.mackysoft.serializereference-extensions": "1.6.1"
+  }
+}
