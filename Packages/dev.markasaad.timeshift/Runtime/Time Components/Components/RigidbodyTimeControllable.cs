@@ -14,16 +14,15 @@ public class RigidbodyTimeControllable : MonoBehaviour, ITimeControllable {
     public Color GizmoColor = new Color(0, 1, 1, 0.3f);
 
     private TimelineScrapper<RigidbodySnapshot> m_timelines;
+    private bool m_doneScraping = false;
 
     private Rigidbody m_rigidbody;
 
-    private void Awake() {
-        int bufferSize = TimeManager.Instance.SnapshotBufferSize;
-        m_timelines = new TimelineScrapper<RigidbodySnapshot>(bufferSize);
-    }
-
     private void Start() {
         m_rigidbody = GetComponent<Rigidbody>();
+
+        int bufferSize = TimeManager.Instance.SnapshotBufferSize;
+        m_timelines = new TimelineScrapper<RigidbodySnapshot>(bufferSize);
     }
 
     private void OnEnable() {
@@ -52,32 +51,44 @@ public class RigidbodyTimeControllable : MonoBehaviour, ITimeControllable {
             Rotation = m_rigidbody.rotation
         };
 
+        m_doneScraping = false;
         if (m_timelines.GetTimeline().IsEmpty || ShouldSave(m_timelines.GetTimeline().Current(), newSnapshot)) {
             m_timelines.GetTimeline().Push(newSnapshot);
-            Debug.Log($"saved snapshot to timeline: {m_timelines.m_currentTimeline}");
+            Debug.Log($"saved to: {m_timelines.m_currentTimeline}");
         }
     }
 
     public void LoadPreviousState() {
-        if (!m_timelines.TryScrapeBack(out var state)) {
-            TimeManager.Instance.NotifyTimelineEmpty(this);
+        if (m_doneScraping) {
             return;
         }
+        if (!m_timelines.TryScrapeBack(out var state)) {
+            TimeManager.Instance.NotifyTimelineEmpty(this);
+            m_rigidbody.isKinematic = false;
+            m_doneScraping = true;
+            return;
+        }
+        m_rigidbody.isKinematic = true;
         SetRigidbodyState(state);
     }
 
-
     public void LoadNextState() {
-        if (!m_timelines.TryScrapeForward(out var state)) {
-            TimeManager.Instance.NotifyTimelineEmpty(this);
+        if (m_doneScraping) {
             return;
         }
+        if (!m_timelines.TryScrapeForward(out var state)) {
+            TimeManager.Instance.NotifyTimelineEmpty(this);
+            m_rigidbody.isKinematic = false;
+            m_doneScraping = true;
+            return;
+        }
+        m_rigidbody.isKinematic = true;
         SetRigidbodyState(state);
     }
 
     private void SetRigidbodyState(RigidbodySnapshot state) {
         m_rigidbody.linearVelocity = state.LinearVelocity;
-        m_rigidbody.angularVelocity = state.AngularVelocity;
+        // m_rigidbody.angularVelocity = state.AngularVelocity;
         m_rigidbody.position = state.Position;
         m_rigidbody.rotation = state.Rotation;
     }

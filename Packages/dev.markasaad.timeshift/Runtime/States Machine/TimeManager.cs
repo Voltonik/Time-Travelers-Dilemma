@@ -47,10 +47,14 @@ public class TimeManager : MonoBehaviour {
 
     public void NotifyTimelineEmpty(ITimeControllable controllable) {
         m_emptyTimelines.Add(controllable);
-        if (m_emptyTimelines.Count == m_registeredControllables.Count && m_registeredControllables.Count > 0) {
-            m_emptyTimelines.Clear();
-            SetStateToType<RecordingState>();
+        if (m_emptyTimelines.Count == m_registeredControllables.Count) {
+            ResetEmptyTimelines();
         }
+    }
+
+    public void ResetEmptyTimelines() {
+        m_emptyTimelines.Clear();
+        SetStateToType<RecordingState>();
     }
 
     public void SetState(TimeState state) {
@@ -86,7 +90,7 @@ public class TimeManager : MonoBehaviour {
         return CurrentState.CanTransitionTo(targetState.GetType());
     }
 
-    private void Start() {
+    private void Awake() {
         if (States.Count == 0) {
             enabled = false;
             return;

@@ -11,6 +11,7 @@ public class LightTimeControllable : MonoBehaviour, ITimeControllable {
     }
 
     private TimelineScrapper<LightSnapshot> m_timelines;
+    private bool m_doneScraping = false;
 
     private Light m_light;
 
@@ -55,22 +56,31 @@ public class LightTimeControllable : MonoBehaviour, ITimeControllable {
             SpotAngle = m_light.spotAngle
         };
 
+        m_doneScraping = false;
         if (m_timelines.GetTimeline().IsEmpty || ShouldSave(m_timelines.GetTimeline().Current(), newSnapshot)) {
             m_timelines.GetTimeline().Push(newSnapshot);
         }
     }
 
     public void LoadPreviousState() {
+        if (m_doneScraping) {
+            return;
+        }
         if (!m_timelines.TryScrapeBack(out var state)) {
             TimeManager.Instance.NotifyTimelineEmpty(this);
+            m_doneScraping = true;
             return;
         }
         SetLightState(state);
     }
 
     public void LoadNextState() {
+        if (m_doneScraping) {
+            return;
+        }
         if (!m_timelines.TryScrapeForward(out var state)) {
             TimeManager.Instance.NotifyTimelineEmpty(this);
+            m_doneScraping = true;
             return;
         }
         SetLightState(state);

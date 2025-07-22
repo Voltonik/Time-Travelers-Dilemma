@@ -9,6 +9,7 @@ public class ParticleSystemTimeControllable : MonoBehaviour, ITimeControllable {
     }
 
     private TimelineScrapper<ParticleSystemSnapshot> m_timelines;
+    private bool m_doneScraping = false;
 
     private ParticleSystem m_particleSystem;
 
@@ -46,36 +47,44 @@ public class ParticleSystemTimeControllable : MonoBehaviour, ITimeControllable {
             Time = m_particleSystem.time,
         };
 
+        m_doneScraping = false;
         if (m_timelines.GetTimeline().IsEmpty || ShouldSave(m_timelines.GetTimeline().Current(), newSnapshot)) {
             m_timelines.GetTimeline().Push(newSnapshot);
         }
     }
 
     public void LoadPreviousState() {
+        if (m_doneScraping) {
+            return;
+        }
         if (!m_timelines.TryScrapeBack(out var state)) {
             TimeManager.Instance.NotifyTimelineEmpty(this);
+            m_doneScraping = true;
             return;
         }
         SetParticleSystemState(state);
     }
 
     public void LoadNextState() {
+        if (m_doneScraping) {
+            return;
+        }
         if (!m_timelines.TryScrapeForward(out var state)) {
             TimeManager.Instance.NotifyTimelineEmpty(this);
+            m_doneScraping = true;
             return;
         }
         SetParticleSystemState(state);
     }
 
     private void SetParticleSystemState(ParticleSystemSnapshot state) {
-        m_particleSystem.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
-        m_particleSystem.Simulate(state.Time, true, true, true);
+        m_particleSystem.Simulate(state.Time, true, true, false);
 
-        if (state.IsPlaying) {
+        if (state.IsPlaying && !m_particleSystem.isPlaying) {
             m_particleSystem.Play();
-            if (state.IsPaused) {
-                m_particleSystem.Pause();
-            }
+        }
+        if (state.IsPaused && m_particleSystem.isPlaying) {
+            m_particleSystem.Pause();
         }
     }
 }

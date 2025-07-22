@@ -31,7 +31,7 @@ public class HistoryBuffer<T> {
 
     public void Push(T item) {
         if (m_cursor < m_count - 1) {
-            m_count = m_cursor + 1;
+            m_count = m_cursor + 1; // Erase any states in the future
         }
         if (m_count == Capacity) {
             m_start = (m_start + 1) % Capacity;

@@ -1,10 +1,13 @@
 using System.Collections.Generic;
 
+using UnityEngine;
+
 public class TimelineScrapper<T> {
     private List<HistoryBuffer<T>> m_timelines = new List<HistoryBuffer<T>>();
 
     public int m_currentTimeline = 0;
     private bool m_revertedTimeline;
+    private bool m_hasFuture;
 
     public TimelineScrapper(int capacity) {
         m_timelines.Add(new HistoryBuffer<T>(capacity));
@@ -30,6 +33,8 @@ public class TimelineScrapper<T> {
         if (!m_timelines[m_currentTimeline].CanGoBack()) {
             NewTimeline();
             state = default;
+            m_hasFuture = true;
+            Debug.Log($"has future: {m_hasFuture}");
             return false;
         }
 
@@ -38,6 +43,11 @@ public class TimelineScrapper<T> {
     }
 
     public bool TryScrapeForward(out T state) {
+        if (!m_hasFuture) {
+            state = default;
+            return false;
+        }
+
         if (!m_revertedTimeline) {
             if (!m_timelines[m_currentTimeline].CanGoBack()) {
                 RevertTimeline();
@@ -52,6 +62,7 @@ public class TimelineScrapper<T> {
         if (!m_timelines[m_currentTimeline].CanGoForward()) {
             m_revertedTimeline = false;
             state = default;
+            m_hasFuture = false;
             return false;
         }
 

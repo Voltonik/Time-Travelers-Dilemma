@@ -8,6 +8,7 @@ public class TransformTimeControllable : MonoBehaviour, ITimeControllable {
     }
 
     private TimelineScrapper<TransformSnapshot> m_timelines;
+    private bool m_doneScraping = false;
 
     private Transform m_transform;
 
@@ -45,22 +46,31 @@ public class TransformTimeControllable : MonoBehaviour, ITimeControllable {
             Scale = m_transform.localScale
         };
 
+        m_doneScraping = false;
         if (m_timelines.GetTimeline().IsEmpty || ShouldSave(m_timelines.GetTimeline().Current(), newSnapshot)) {
             m_timelines.GetTimeline().Push(newSnapshot);
         }
     }
 
     public void LoadPreviousState() {
+        if (m_doneScraping) {
+            return;
+        }
         if (!m_timelines.TryScrapeBack(out var state)) {
             TimeManager.Instance.NotifyTimelineEmpty(this);
+            m_doneScraping = true;
             return;
         }
         SetTransformState(state);
     }
 
     public void LoadNextState() {
+        if (m_doneScraping) {
+            return;
+        }
         if (!m_timelines.TryScrapeForward(out var state)) {
             TimeManager.Instance.NotifyTimelineEmpty(this);
+            m_doneScraping = true;
             return;
         }
         SetTransformState(state);

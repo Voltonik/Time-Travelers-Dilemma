@@ -17,12 +17,6 @@ public class PlayerController : MonoBehaviour {
     private void Start() {
         m_rb = GetComponent<Rigidbody>();
         m_rb.freezeRotation = true;
-
-        if (CameraController != null) {
-            CameraController.SetPlayerTransform(transform);
-        } else {
-            Debug.LogError("Player camera is not assigned");
-        }
     }
 
     private void Update() {
