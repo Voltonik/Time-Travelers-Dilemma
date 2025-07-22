@@ -34,7 +34,6 @@ public class TimelineScrapper<T> {
             NewTimeline();
             state = default;
             m_hasFuture = true;
-            Debug.Log($"has future: {m_hasFuture}");
             return false;
         }
 
