@@ -16,7 +16,7 @@ public class FastForwardState : TimeState {
     }
 
     public override bool CanTransitionTo(Type targetStateType) {
-        if (targetStateType == typeof(RewindState)) {
+        if (targetStateType == typeof(RewindState) || targetStateType == typeof(FastForwardState)) {
             return false;
         }
 
