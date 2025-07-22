@@ -15,4 +15,8 @@ public class PauseState : TimeState {
     public override void Update(Action onSaveState, Action onLoadNextState, Action onLoadPreviousState) {
 
     }
+
+    public override bool CanTransitionTo(Type targetStateType) {
+        return true;
+    }
 }

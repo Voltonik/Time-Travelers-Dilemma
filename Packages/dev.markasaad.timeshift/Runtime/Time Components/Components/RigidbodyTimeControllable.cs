@@ -13,24 +13,13 @@ public class RigidbodyTimeControllable : MonoBehaviour, ITimeControllable {
     public bool ShowDebugGizmos = true;
     public Color GizmoColor = new Color(0, 1, 1, 0.3f);
 
-    private TimeBuffer<RigidbodySnapshot> m_snapshots;
+    private TimelineScrapper<RigidbodySnapshot> m_timelines;
+
     private Rigidbody m_rigidbody;
 
     private void Awake() {
-        float rewind = 0f, ff = 0f, samplingRate = 0.02f;
-        var tm = TimeManager.Instance;
-        if (tm != null && tm.States != null) {
-            foreach (var state in tm.States) {
-                if (state is RewindState r) rewind = Mathf.Max(rewind, r.RewindTime);
-                if (state is FastForwardState f) ff = Mathf.Max(ff, f.FastForwardTime);
-                if (state is RecordingState rec) samplingRate = rec.SamplingRate;
-            }
-        }
-        float maxRewindOrFFTime = Mathf.Max(rewind, ff);
-        int bufferSize = Mathf.CeilToInt(maxRewindOrFFTime / samplingRate) + 2;
-        m_snapshots = new TimeBuffer<RigidbodySnapshot>(bufferSize);
-
-        Debug.Log($"{bufferSize} snapshots allocated for {maxRewindOrFFTime}s max rewind/ff time at {samplingRate}s sampling rate.");
+        int bufferSize = TimeManager.Instance.SnapshotBufferSize;
+        m_timelines = new TimelineScrapper<RigidbodySnapshot>(bufferSize);
     }
 
     private void Start() {
@@ -42,40 +31,51 @@ public class RigidbodyTimeControllable : MonoBehaviour, ITimeControllable {
     }
 
     private void OnDisable() {
-        TimeManager.Instance.UnregisterTimeControllable(this);
+        if (TimeManager.Instance != null) {
+            TimeManager.Instance.UnregisterTimeControllable(this);
+        }
+    }
+
+    private bool ShouldSave(RigidbodySnapshot last, RigidbodySnapshot current) {
+        float posChange = Vector3.Distance(last.Position, current.Position);
+        float rotChange = Quaternion.Angle(last.Rotation, current.Rotation);
+        float velChange = (last.LinearVelocity - current.LinearVelocity).magnitude;
+
+        return posChange > 0.1f || rotChange > 5f || velChange > 0.5f;
     }
 
     public void SaveState() {
-        m_snapshots.Push(new RigidbodySnapshot {
+        var newSnapshot = new RigidbodySnapshot {
             LinearVelocity = m_rigidbody.linearVelocity,
             AngularVelocity = m_rigidbody.angularVelocity,
             Position = m_rigidbody.position,
             Rotation = m_rigidbody.rotation
-        });
+        };
+
+        if (m_timelines.GetTimeline().IsEmpty || ShouldSave(m_timelines.GetTimeline().Current(), newSnapshot)) {
+            m_timelines.GetTimeline().Push(newSnapshot);
+            Debug.Log($"saved snapshot to timeline: {m_timelines.m_currentTimeline}");
+        }
     }
 
     public void LoadPreviousState() {
-        if (m_snapshots.IsEmpty) {
-            var tm = TimeManager.Instance;
-            if (tm != null) tm.SetStateToType<RecordingState>();
+        if (!m_timelines.TryScrapeBack(out var state)) {
+            TimeManager.Instance.NotifyTimelineEmpty(this);
             return;
         }
-
-        var state = m_snapshots.PopPrevious();
-        m_rigidbody.linearVelocity = state.LinearVelocity;
-        m_rigidbody.angularVelocity = state.AngularVelocity;
-        m_rigidbody.position = state.Position;
-        m_rigidbody.rotation = state.Rotation;
+        SetRigidbodyState(state);
     }
 
+
     public void LoadNextState() {
-        if (m_snapshots.IsEmpty) {
-            var tm = TimeManager.Instance;
-            if (tm != null) tm.SetStateToType<RecordingState>();
+        if (!m_timelines.TryScrapeForward(out var state)) {
+            TimeManager.Instance.NotifyTimelineEmpty(this);
             return;
         }
+        SetRigidbodyState(state);
+    }
 
-        var state = m_snapshots.PushNext();
+    private void SetRigidbodyState(RigidbodySnapshot state) {
         m_rigidbody.linearVelocity = state.LinearVelocity;
         m_rigidbody.angularVelocity = state.AngularVelocity;
         m_rigidbody.position = state.Position;
@@ -83,7 +83,7 @@ public class RigidbodyTimeControllable : MonoBehaviour, ITimeControllable {
     }
 
     private void OnDrawGizmosSelected() {
-        if (!ShowDebugGizmos || m_snapshots == null || m_snapshots.Count == 0)
+        if (!ShowDebugGizmos || m_timelines == null || m_timelines.GetTimeline() == null || m_timelines.GetTimeline().Count == 0)
             return;
 
         Gizmos.color = GizmoColor;
@@ -92,8 +92,8 @@ public class RigidbodyTimeControllable : MonoBehaviour, ITimeControllable {
         if (t != null)
             scale = Vector3.Scale(t.localScale, Vector3.one);
 
-        for (int i = 0; i < m_snapshots.Count; i++) {
-            var snap = m_snapshots[i];
+        for (int i = 0; i < m_timelines.GetTimeline().Count; i++) {
+            var snap = m_timelines.GetTimeline()[i];
             Gizmos.matrix = Matrix4x4.TRS(snap.Position, snap.Rotation, scale);
             Gizmos.DrawCube(Vector3.zero, Vector3.one);
         }

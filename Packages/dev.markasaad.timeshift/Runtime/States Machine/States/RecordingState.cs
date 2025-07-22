@@ -23,4 +23,8 @@ public class RecordingState : TimeState {
             onSaveState?.Invoke();
         }
     }
+
+    public override bool CanTransitionTo(Type targetStateType) {
+        return true;
+    }
 }
