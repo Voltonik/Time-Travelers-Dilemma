@@ -1,82 +1,35 @@
 using UnityEngine;
 
-public class TransformTimeControllable : MonoBehaviour, ITimeControllable {
-    private struct TransformSnapshot {
-        public Vector3 Position;
-        public Quaternion Rotation;
-        public Vector3 Scale;
-    }
+public struct TransformStateSnapshot {
+    public Vector3 Position;
+    public Quaternion Rotation;
+    public Vector3 Scale;
+}
 
-    private TimelineScrapper<TransformSnapshot> m_timelines;
-    private bool m_doneScraping = false;
-
+public class TransformTimeControllable : BaseTimeControllable<TransformStateSnapshot> {
     private Transform m_transform;
 
-    private void Awake() {
-        int bufferSize = TimeManager.Instance.SnapshotBufferSize;
-        m_timelines = new TimelineScrapper<TransformSnapshot>(bufferSize);
-    }
-
-    private void Start() {
+    protected override void Awake() {
+        base.Awake();
         m_transform = transform;
     }
 
-    private void OnEnable() {
-        TimeManager.Instance.RegisterTimeControllable(this);
-    }
-
-    private void OnDisable() {
-        if (TimeManager.Instance != null) {
-            TimeManager.Instance.UnregisterTimeControllable(this);
-        }
-    }
-
-    private bool ShouldSave(TransformSnapshot last, TransformSnapshot current) {
+    protected override bool ShouldSave(TransformStateSnapshot last, TransformStateSnapshot current) {
         float posChange = Vector3.Distance(last.Position, current.Position);
         float rotChange = Quaternion.Angle(last.Rotation, current.Rotation);
         float scaleChange = Vector3.Distance(last.Scale, current.Scale);
-
         return posChange > 0.01f || rotChange > 1f || scaleChange > 0.01f;
     }
 
-    public void SaveState() {
-        var newSnapshot = new TransformSnapshot {
+    protected override TransformStateSnapshot CaptureState() {
+        return new TransformStateSnapshot {
             Position = m_transform.position,
             Rotation = m_transform.rotation,
             Scale = m_transform.localScale
         };
-
-        m_doneScraping = false;
-        if (m_timelines.GetTimeline().IsEmpty || ShouldSave(m_timelines.GetTimeline().Current(), newSnapshot)) {
-            m_timelines.GetTimeline().Push(newSnapshot);
-        }
     }
 
-    public void LoadPreviousState() {
-        if (m_doneScraping) {
-            return;
-        }
-        if (!m_timelines.TryScrapeBack(out var state)) {
-            TimeManager.Instance.NotifyTimelineEmpty(this);
-            m_doneScraping = true;
-            return;
-        }
-        SetTransformState(state);
-    }
-
-    public void LoadNextState() {
-        if (m_doneScraping) {
-            return;
-        }
-        if (!m_timelines.TryScrapeForward(out var state)) {
-            TimeManager.Instance.NotifyTimelineEmpty(this);
-            m_doneScraping = true;
-            return;
-        }
-        SetTransformState(state);
-    }
-
-    private void SetTransformState(TransformSnapshot state) {
+    protected override void ApplyState(TransformStateSnapshot state) {
         m_transform.position = state.Position;
         m_transform.rotation = state.Rotation;
         m_transform.localScale = state.Scale;

@@ -6,7 +6,7 @@ public class TimelineScrapper<T> {
     private List<HistoryBuffer<T>> m_timelines = new List<HistoryBuffer<T>>();
 
     public int m_currentTimeline = 0;
-    private bool m_revertedTimeline;
+    private bool m_returnedToFork;
     private bool m_hasFuture;
 
     public TimelineScrapper(int capacity) {
@@ -48,10 +48,10 @@ public class TimelineScrapper<T> {
             return false;
         }
 
-        if (!m_revertedTimeline) {
+        if (!m_returnedToFork) {
             if (!m_timelines[m_currentTimeline].CanGoBack()) {
                 RevertTimeline();
-                m_revertedTimeline = true;
+                m_returnedToFork = true;
                 return TryScrapeForward(out state);
             }
 
@@ -60,7 +60,7 @@ public class TimelineScrapper<T> {
         }
 
         if (!m_timelines[m_currentTimeline].CanGoForward()) {
-            m_revertedTimeline = false;
+            m_returnedToFork = false;
             state = default;
             m_hasFuture = false;
             return false;

@@ -30,6 +30,18 @@ public class TimeManager : MonoBehaviour {
     private Action m_onLoadNextState;
     private Action m_onLoadPreviousState;
 
+    public void SaveState() {
+        m_onSaveState?.Invoke();
+    }
+
+    public void LoadNextState() {
+        m_onLoadNextState?.Invoke();
+    }
+
+    public void LoadPreviousState() {
+        m_onLoadPreviousState?.Invoke();
+    }
+
     public void RegisterTimeControllable(ITimeControllable timeControllable) {
         m_registeredControllables.Add(timeControllable);
         m_onSaveState += timeControllable.SaveState;
@@ -116,6 +128,6 @@ public class TimeManager : MonoBehaviour {
     }
 
     private void Update() {
-        CurrentState.Update(m_onSaveState, m_onLoadNextState, m_onLoadPreviousState);
+        CurrentState.Update();
     }
 }

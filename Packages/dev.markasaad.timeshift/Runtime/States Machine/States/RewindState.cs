@@ -16,8 +16,8 @@ public class RewindState : TimeState {
 
     }
 
-    public override void Update(Action onSaveState, Action onLoadNextState, Action onLoadPreviousState) {
-        onLoadPreviousState?.Invoke();
+    public override void Update() {
+        TimeManager.Instance.LoadPreviousState();
 
         m_timer += Time.deltaTime;
         if (m_timer >= RewindTime) {

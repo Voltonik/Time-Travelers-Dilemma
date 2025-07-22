@@ -16,8 +16,8 @@ public class FastForwardState : TimeState {
 
     }
 
-    public override void Update(Action onSaveState, Action onLoadNextState, Action onLoadPreviousState) {
-        onLoadNextState?.Invoke();
+    public override void Update() {
+        TimeManager.Instance.LoadNextState();
 
         m_timer += Time.deltaTime;
         if (m_timer >= FastForwardTime) {

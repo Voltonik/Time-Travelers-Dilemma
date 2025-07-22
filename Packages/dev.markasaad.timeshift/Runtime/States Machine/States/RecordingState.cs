@@ -15,12 +15,12 @@ public class RecordingState : TimeState {
     public override void OnExitState() {
     }
 
-    public override void Update(Action onSaveState, Action onLoadNextState, Action onLoadPreviousState) {
+    public override void Update() {
         m_timer += Time.deltaTime;
 
         while (m_timer >= SamplingRate) {
             m_timer -= SamplingRate;
-            onSaveState?.Invoke();
+            TimeManager.Instance.SaveState();
         }
     }
 

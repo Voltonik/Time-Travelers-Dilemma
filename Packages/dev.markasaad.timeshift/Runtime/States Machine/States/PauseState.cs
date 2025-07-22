@@ -12,7 +12,7 @@ public class PauseState : TimeState {
         Time.timeScale = 1f;
     }
 
-    public override void Update(Action onSaveState, Action onLoadNextState, Action onLoadPreviousState) {
+    public override void Update() {
 
     }
 
