@@ -4,8 +4,6 @@ using UnityEngine;
 
 [Serializable]
 public class RewindState : TimeState {
-    public float RewindTime = 5f;
-
     private float m_timer;
 
     public override void OnEnterState() {
@@ -20,7 +18,7 @@ public class RewindState : TimeState {
         TimeManager.Instance.LoadPreviousState();
 
         m_timer += Time.deltaTime;
-        if (m_timer >= RewindTime) {
+        if (m_timer >= TimeManager.Instance.GetStateByType<RecordingState>().SavedTime) {
             m_timer = 0f;
             TimeManager.Instance.ResetEmptyTimelines();
         }

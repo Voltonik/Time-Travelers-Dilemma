@@ -4,8 +4,6 @@ using UnityEngine;
 
 [Serializable]
 public class FastForwardState : TimeState {
-    public float FastForwardTime = 5f;
-
     private float m_timer;
 
     public override void OnEnterState() {
@@ -20,7 +18,7 @@ public class FastForwardState : TimeState {
         TimeManager.Instance.LoadNextState();
 
         m_timer += Time.deltaTime;
-        if (m_timer >= FastForwardTime) {
+        if (m_timer >= TimeManager.Instance.GetStateByType<RecordingState>().SavedTime) {
             m_timer = 0f;
             TimeManager.Instance.ResetEmptyTimelines();
         }

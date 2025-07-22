@@ -95,6 +95,13 @@ public class TimeManager : MonoBehaviour {
         Debug.LogWarning($"No state of type {typeof(T).Name} found.");
     }
 
+    public T GetStateByType<T>() where T : TimeState {
+        if (m_stateCache.TryGetValue(typeof(T), out var state) && state is T t) {
+            return t;
+        }
+        return null;
+    }
+
     private bool CanTransitionTo(TimeState targetState) {
         if (CurrentState == null || targetState == null)
             return true;
@@ -113,16 +120,15 @@ public class TimeManager : MonoBehaviour {
             m_stateCache[state.GetType()] = state;
         }
 
-        float rewind = 0f, ff = 0f, samplingRate = 0.02f;
-        if (m_stateCache.TryGetValue(typeof(RewindState), out var rewindState) && rewindState is RewindState r)
-            rewind = r.RewindTime;
-        if (m_stateCache.TryGetValue(typeof(FastForwardState), out var ffState) && ffState is FastForwardState f)
-            ff = f.FastForwardTime;
-        if (m_stateCache.TryGetValue(typeof(RecordingState), out var recState) && recState is RecordingState rec)
-            samplingRate = rec.SamplingRate;
+        float savedTime = 5f;
+        float samplingRate = 0.02f;
 
-        float maxRewindOrFFTime = Mathf.Max(rewind, ff);
-        SnapshotBufferSize = Mathf.CeilToInt(maxRewindOrFFTime / samplingRate) + 2;
+        if (m_stateCache.TryGetValue(typeof(RecordingState), out var recState) && recState is RecordingState rec) {
+            savedTime = rec.SavedTime;
+            samplingRate = rec.SamplingRate;
+        }
+
+        SnapshotBufferSize = Mathf.CeilToInt(savedTime / samplingRate) + 2;
 
         SetState(States[0]);
     }

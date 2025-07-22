@@ -314,18 +314,17 @@ MonoBehaviour:
     - rid: 4590830959974940939
       type: {class: RecordingState, ns: , asm: dev.markasaad.volt.TimeShift}
       data:
+        SavedTime: 5
         SamplingRate: 0.1
     - rid: 4590830959974940940
       type: {class: PauseState, ns: , asm: dev.markasaad.volt.TimeShift}
       data: 
     - rid: 4590830959974940941
       type: {class: RewindState, ns: , asm: dev.markasaad.volt.TimeShift}
-      data:
-        RewindTime: 2
+      data: 
     - rid: 4590830959974940942
       type: {class: FastForwardState, ns: , asm: dev.markasaad.volt.TimeShift}
-      data:
-        FastForwardTime: 2
+      data: 
 --- !u!4 &292209096
 Transform:
   m_ObjectHideFlags: 0

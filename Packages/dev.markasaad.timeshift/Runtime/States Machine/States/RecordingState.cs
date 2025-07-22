@@ -4,6 +4,7 @@ using UnityEngine;
 
 [Serializable]
 public class RecordingState : TimeState {
+    public float SavedTime = 5f;
     public float SamplingRate = 0.02f;
 
     private float m_timer;

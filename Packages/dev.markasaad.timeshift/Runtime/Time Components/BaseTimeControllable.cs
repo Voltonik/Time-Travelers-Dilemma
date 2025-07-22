@@ -25,10 +25,17 @@ public abstract class BaseTimeControllable<TState> : MonoBehaviour, ITimeControl
     protected abstract void ApplyState(TState state);
 
     public void SaveState() {
-        var newSnapshot = CaptureState();
         m_doneScraping = false;
-        if (m_timeline.GetTimeline().IsEmpty || ShouldSave(m_timeline.GetTimeline().Current(), newSnapshot)) {
-            m_timeline.GetTimeline().Push(newSnapshot);
+
+        var newSnapshot = CaptureState();
+        var timeline = m_timeline.GetTimeline();
+        float now = Time.time;
+        float saveTime = TimeManager.Instance.GetStateByType<RecordingState>().SavedTime;
+
+        timeline.EraseOldSnapshots(now, saveTime);
+
+        if (timeline.IsEmpty || ShouldSave(timeline.Current(), newSnapshot)) {
+            timeline.Push(newSnapshot, now);
         }
     }
 
