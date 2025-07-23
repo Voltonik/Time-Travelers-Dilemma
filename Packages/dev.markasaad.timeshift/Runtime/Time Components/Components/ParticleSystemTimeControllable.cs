@@ -15,13 +15,6 @@ public class ParticleSystemTimeControllable : BaseTimeControllable<ParticleSyste
         m_particleSystem = GetComponent<ParticleSystem>();
     }
 
-    protected override bool ShouldSave(ParticleSystemStateSnapshot last, ParticleSystemStateSnapshot current) {
-        float timeChange = Mathf.Abs(last.Time - current.Time);
-        return last.IsPlaying != current.IsPlaying ||
-               last.IsPaused != current.IsPaused ||
-               timeChange > 0.01f;
-    }
-
     protected override ParticleSystemStateSnapshot CaptureState() {
         return new ParticleSystemStateSnapshot {
             IsPlaying = m_particleSystem.isPlaying,

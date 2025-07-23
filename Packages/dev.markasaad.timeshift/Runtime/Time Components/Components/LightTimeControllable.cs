@@ -17,18 +17,6 @@ public class LightTimeControllable : BaseTimeControllable<LightStateSnapshot> {
         m_light = GetComponent<Light>();
     }
 
-    protected override bool ShouldSave(LightStateSnapshot last, LightStateSnapshot current) {
-        float colorChange = Vector4.Distance(last.Color, current.Color);
-        float intensityChange = Mathf.Abs(last.Intensity - current.Intensity);
-        float rangeChange = Mathf.Abs(last.Range - current.Range);
-        float spotAngleChange = Mathf.Abs(last.SpotAngle - current.SpotAngle);
-        return last.Enabled != current.Enabled ||
-               colorChange > 0.01f ||
-               intensityChange > 0.01f ||
-               rangeChange > 0.1f ||
-               spotAngleChange > 0.1f;
-    }
-
     protected override LightStateSnapshot CaptureState() {
         return new LightStateSnapshot {
             Enabled = m_light.enabled,

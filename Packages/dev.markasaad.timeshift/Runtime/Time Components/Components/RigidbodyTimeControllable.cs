@@ -20,13 +20,6 @@ public class RigidbodyTimeControllable : BaseTimeControllable<RigidbodyStateSnap
         m_rigidbody = GetComponent<Rigidbody>();
     }
 
-    protected override bool ShouldSave(RigidbodyStateSnapshot last, RigidbodyStateSnapshot current) {
-        float posChange = Vector3.Distance(last.Position, current.Position);
-        float rotChange = Quaternion.Angle(last.Rotation, current.Rotation);
-        float velChange = (last.LinearVelocity - current.LinearVelocity).magnitude;
-        return posChange > 0.1f || rotChange > 5f || velChange > 0.5f;
-    }
-
     protected override RigidbodyStateSnapshot CaptureState() {
         return new RigidbodyStateSnapshot {
             LinearVelocity = m_rigidbody.linearVelocity,

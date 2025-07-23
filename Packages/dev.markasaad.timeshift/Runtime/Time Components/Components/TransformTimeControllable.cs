@@ -14,13 +14,6 @@ public class TransformTimeControllable : BaseTimeControllable<TransformStateSnap
         m_transform = transform;
     }
 
-    protected override bool ShouldSave(TransformStateSnapshot last, TransformStateSnapshot current) {
-        float posChange = Vector3.Distance(last.Position, current.Position);
-        float rotChange = Quaternion.Angle(last.Rotation, current.Rotation);
-        float scaleChange = Vector3.Distance(last.Scale, current.Scale);
-        return posChange > 0.01f || rotChange > 1f || scaleChange > 0.01f;
-    }
-
     protected override TransformStateSnapshot CaptureState() {
         return new TransformStateSnapshot {
             Position = m_transform.position,
