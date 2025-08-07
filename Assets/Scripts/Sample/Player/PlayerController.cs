@@ -41,13 +41,13 @@ public class PlayerController : MonoBehaviour {
         m_isGrounded = Physics.Raycast(transform.position, Vector3.down, GroundCheckDistance + 0.1f, GroundMask);
 
         if (Input.GetButtonDown("Jump") && m_isGrounded) {
-            m_rb.linearVelocity = new Vector3(m_rb.linearVelocity.x, 0f, m_rb.linearVelocity.z);
+            m_rb.velocity = new Vector3(m_rb.velocity.x, 0f, m_rb.velocity.z);
             m_rb.AddForce(Vector3.up * JumpForce, ForceMode.Impulse);
         }
 
         Vector3 move = m_moveInput * Speed;
-        Vector3 velocity = new Vector3(move.x, m_rb.linearVelocity.y, move.z);
-        m_rb.linearVelocity = velocity;
+        Vector3 velocity = new Vector3(move.x, m_rb.velocity.y, move.z);
+        m_rb.velocity = velocity;
     }
 
     private void LateUpdate() {

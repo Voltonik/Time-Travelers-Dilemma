@@ -22,7 +22,7 @@ public class RigidbodyTimeControllable : BaseTimeControllable<RigidbodyStateSnap
 
     protected override RigidbodyStateSnapshot CaptureState() {
         return new RigidbodyStateSnapshot {
-            LinearVelocity = m_rigidbody.linearVelocity,
+            LinearVelocity = m_rigidbody.velocity,
             AngularVelocity = m_rigidbody.angularVelocity,
             Position = m_rigidbody.position,
             Rotation = m_rigidbody.rotation
@@ -30,7 +30,7 @@ public class RigidbodyTimeControllable : BaseTimeControllable<RigidbodyStateSnap
     }
 
     protected override void ApplyState(RigidbodyStateSnapshot state) {
-        m_rigidbody.linearVelocity = state.LinearVelocity;
+        m_rigidbody.velocity = state.LinearVelocity;
         // m_rigidbody.angularVelocity = state.AngularVelocity;
         m_rigidbody.position = state.Position;
         m_rigidbody.rotation = state.Rotation;
